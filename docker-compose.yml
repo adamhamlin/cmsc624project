@@ -1,0 +1,20 @@
+version: '3'
+services:
+  coordinator:
+    image: centos/postgresql-10-centos7
+    ports:
+    - 4444:5432
+    environment:
+    - POSTGRESQL_USER=buddy
+    - POSTGRESQL_PASSWORD=pw
+    - POSTGRESQL_DATABASE=main
+    - POSTGRESQL_ADMIN_PASSWORD=pw
+  contractor:
+    image: centos/postgresql-10-centos7
+    ports:
+    - 4445:5432 # TODO: specify port range for scaling (e.g., 4445-4455:5432)
+    environment:
+    - POSTGRESQL_USER=buddy
+    - POSTGRESQL_PASSWORD=pw
+    - POSTGRESQL_DATABASE=main
+    - POSTGRESQL_ADMIN_PASSWORD=pw
