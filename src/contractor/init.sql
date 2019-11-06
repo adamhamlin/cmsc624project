@@ -1,12 +1,27 @@
 \c main
 
-CREATE TABLE dummy (
+-- NOTE: Expects variable 'container_num' to be set
+
+CREATE TABLE inventory_:container_num (
     id SERIAL PRIMARY KEY,
-    name TEXT,
-    amount DOUBLE PRECISION
+    product TEXT,
+    cost DOUBLE PRECISION
 );
-INSERT INTO dummy VALUES
-    (1, 'a', 2.5),
-    (2, 'b', 14.9),
-    (3, 'c', 11),
-    (4, 'd', 0);
+INSERT INTO inventory_:container_num VALUES
+    (1, 'candy bar', 2.5),
+    (2, 'sunglasses', 14.9),
+    (3, 'shampoo', 11),
+    (4, 'gum', 1);
+
+CREATE TABLE customers_:container_num (
+    id SERIAL PRIMARY KEY,
+    first_name TEXT,
+    last_name TEXT,
+    age INT
+);
+INSERT INTO customers_:container_num VALUES
+    (1, 'Aaron', 'Shiver', 25),
+    (2, 'Bill', 'Karson', 51),
+    (3, 'Carol', 'Brown', 34),
+    (4, 'Darcy', 'Yates', 18),
+    (5, 'Edgar', 'Zaryna', 67);
