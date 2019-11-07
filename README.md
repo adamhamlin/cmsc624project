@@ -1,6 +1,9 @@
 # cmsc624project
 Advanced Database Design - Final Project (Fall 2019)
 
+# Dependencies
+Of note, you will need `docker`, `docker-compose`, and some postgres client tools like `psql` and `pg_isready`.
+
 # Development
 To spin up the networked containers for the coordinator and multiple contractors, run the following:
 ```bash
