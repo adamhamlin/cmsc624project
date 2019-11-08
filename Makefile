@@ -1,7 +1,7 @@
-CONTRACTORS ?= 1 # NOTE specifying SCALE higher than 1 doesn't really work yet
-CPORT ?= 4445 # Contractor port; Need to specify this when multiple contractors
+CONTRACTORS ?= 1 # Specify how many contractors to spin up
+CPORT ?= 4445 # Contractor port; if you want to connect a postgres client direct to contractor
 
-.PHONY: run init-contractor stop
+.PHONY: run psql-coordinator psql-contractor stop
 
 run:
 	docker-compose up -d --scale contractor=$(CONTRACTORS)

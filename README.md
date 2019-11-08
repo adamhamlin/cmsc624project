@@ -9,8 +9,10 @@ To spin up the networked containers for the coordinator and multiple contractors
 ```bash
 make run CONTRACTORS=3
 ```
-The coordinator will have read access to any tables on contractor_X under schema `contractor_X`.
-
+The coordinator will have read access to any tables on contractor_X under schema `contractor_X`. You can connect a client to the coordinator by running:
+```bash
+make psql-coordinator
+```
 To spin down:
 ```bash
 make stop
