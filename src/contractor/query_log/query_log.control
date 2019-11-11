@@ -1,0 +1,4 @@
+comment = 'PostgreSQL Logger Utility'
+default_version = '0.1.0'
+relocatable = true
+module_pathname = '$libdir/query_log'

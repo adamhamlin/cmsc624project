@@ -1,0 +1,5 @@
+# Source Tracking FDW
+comment = 'An extension to track the contribution of records from foreign data sets on final result'
+default_version = '0.1.0'
+module_pathname = '$libdir/source_tracking_fdw'
+relocatable = true

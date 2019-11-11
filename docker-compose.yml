@@ -1,7 +1,7 @@
 version: '3'
 services:
   coordinator:
-    image: centos/postgresql-10-centos7
+    build: ./src/coordinator
     ports:
     - 4444:5432
     environment:
@@ -9,8 +9,10 @@ services:
     - POSTGRESQL_PASSWORD=pw
     - POSTGRESQL_DATABASE=main
     - POSTGRESQL_ADMIN_PASSWORD=pw
+    #volumes:
+    #- ./src/coordinator/source_tracking_fdw/source_tracking_fdw.c:/usr/src/source_tracking_fdw/source_tracking_fdw.c
   contractor:
-    image: centos/postgresql-10-centos7
+    build: ./src/contractor
     ports:
     - 4445-4455:5432 # specify port range for scaling multiple contractors
     environment:
@@ -18,3 +20,5 @@ services:
     - POSTGRESQL_PASSWORD=pw
     - POSTGRESQL_DATABASE=main
     - POSTGRESQL_ADMIN_PASSWORD=pw
+    #volumes:
+    #- ./src/contractor/query_log/query_log.c:/usr/src/query_log/query_log.c

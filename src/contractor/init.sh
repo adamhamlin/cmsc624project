@@ -14,6 +14,8 @@ while read -r line; do
         echo "Waiting for ${container} postgres to start..."
         sleep 1
     done
+    echo "Enabling query logger extension..."
+    PGPASSWORD=pw psql -h localhost -p ${port} -U postgres -d main -c 'CREATE EXTENSION query_log'
     echo "Populating contractor data for ${container}..."
     PGPASSWORD=pw psql -h localhost -p ${port} -U buddy -d main -v container_num=${container_num} -f ${DIR}/init.sql
 done <<< "$container_port_mappings"

@@ -8,6 +8,10 @@ do
     echo "Waiting for coordinator postgres to start..."
     sleep 1
 done
+
+echo "Enabling source tracking fdw extension..."
+PGPASSWORD=pw psql -h localhost -p ${COORDINATOR_PORT} -U postgres -d main -c 'CREATE EXTENSION source_tracking_fdw'
+
 echo "Enabling postgres fdw extension..."
 PGPASSWORD=pw psql -h localhost -p ${COORDINATOR_PORT} -U postgres -d main -c 'CREATE EXTENSION postgres_fdw'
 
