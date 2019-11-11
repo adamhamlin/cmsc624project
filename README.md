@@ -19,3 +19,6 @@ make stop
 ```
 
 Check out the Makefile for other commands/shortcuts.
+
+# Resources
+- [PostgreSQL Hooks](https://github.com/AmatanHead/psql-hooks/blob/master/Detailed.md)
