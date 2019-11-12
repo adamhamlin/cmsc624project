@@ -22,3 +22,4 @@ Check out the Makefile for other commands/shortcuts.
 
 # Resources
 - [PostgreSQL Hooks](https://github.com/AmatanHead/psql-hooks/blob/master/Detailed.md)
+- [Info about our postgres docker image](https://hub.docker.com/r/centos/postgresql-10-centos7). See `./src/contractor/extend` for an example of how to extend it

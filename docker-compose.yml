@@ -20,5 +20,6 @@ services:
     - POSTGRESQL_PASSWORD=pw
     - POSTGRESQL_DATABASE=main
     - POSTGRESQL_ADMIN_PASSWORD=pw
-    #volumes:
+    volumes:
+    - ./src/contractor/extend:/opt/app-root/src
     #- ./src/contractor/query_log/query_log.c:/usr/src/query_log/query_log.c
