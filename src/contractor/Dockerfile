@@ -7,12 +7,15 @@ RUN yum install -y rh-postgresql10-postgresql-devel which
 
 # Install query_log extension
 ENV PATH="/opt/rh/rh-postgresql10/root/usr/bin:${PATH}"
-COPY query_log /usr/src/query_log
+COPY ./query_log /usr/src/query_log
 RUN set -ex \
     && cd /usr/src/query_log \
     && make install
 
 # Don't change the entrypoint/cmd stuff
 USER 26
+# Copy over init scripts as user postgres
+COPY ./init /opt/app-root/src
+
 ENTRYPOINT ["container-entrypoint"]
 CMD ["run-postgresql"]

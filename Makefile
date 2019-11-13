@@ -3,13 +3,12 @@ CPORT ?= 4445 # Contractor port; if you want to connect a postgres client direct
 
 .PHONY: build run shell-coordinator shell-contractor psql-coordinator psql-contractor stop retry
 
-build: # should only be needed when making changes to Dockerfiles, etc
+build: # should only be needed when making changes to Dockerfiles, init scripts, etc
 	docker-compose build
 
 run:
 	docker-compose up -d --scale contractor=$(CONTRACTORS)
-	./src/contractor/init.sh
-	./src/coordinator/init.sh
+	./src/coordinator/init/wait_for_coordinator.sh
 
 shell-coordinator:
 	docker exec -u 0 -it cmsc624project_coordinator_1 /bin/bash
