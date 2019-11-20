@@ -10,7 +10,7 @@ ENV PATH="/opt/rh/rh-postgresql10/root/usr/bin:${PATH}"
 COPY ./query_log /usr/src/query_log
 RUN set -ex \
     && cd /usr/src/query_log \
-    && make install
+    && make && make install
 
 # Don't change the entrypoint/cmd stuff
 USER 26

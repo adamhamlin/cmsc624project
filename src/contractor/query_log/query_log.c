@@ -125,7 +125,7 @@ query_log(PG_FUNCTION_ARGS)
 
     per_query_ctx = rsinfo->econtext->ecxt_per_query_memory;
 	oldcontext = MemoryContextSwitchTo(per_query_ctx);
-        tupstore = tuplestore_begin_heap(true, false, work_mem);
+    tupstore = tuplestore_begin_heap(true, false, work_mem);
 
     fp = fopen("/tmp/log.stat", "r");
     if (fp == NULL)

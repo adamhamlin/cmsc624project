@@ -5,12 +5,12 @@ RUN yum groupinstall -y "Development Tools"
 RUN yum install centos-release-scl-rh
 RUN yum install -y rh-postgresql10-postgresql-devel which
 
-# Install source_tracking_fdw extension
 ENV PATH="/opt/rh/rh-postgresql10/root/usr/bin:${PATH}"
+# Install source_tracking_fdw extension
 COPY ./source_tracking_fdw /usr/src/source_tracking_fdw
 RUN set -ex \
     && cd /usr/src/source_tracking_fdw \
-    && make install
+    && make && make install
 
 # Don't change the entrypoint/cmd stuff
 USER 26
