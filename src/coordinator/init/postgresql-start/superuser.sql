@@ -9,6 +9,7 @@ CREATE EXTENSION postgres_fdw;
 drop aggregate if exists agg_source(jsonb);
 drop function if exists agg_source_finalfunc(jsonb);
 drop function if exists agg_source_sfunc(jsonb, jsonb);
+drop function if exists accesses(text, text);
 
 create function agg_source_sfunc(agg_state jsonb, el jsonb)
 returns jsonb
@@ -62,3 +63,30 @@ create aggregate agg_source (jsonb)
     finalfunc = agg_source_finalfunc,
     initcond = '{}'
 );
+
+create function accesses(table_name text, contractor text)
+returns numeric
+language plpgsql
+as $$
+declare
+  returned record;
+  seq bigint;
+  idx bigint;
+  place int;
+  cnt int := 0;
+begin
+  --with tot as
+  --(select reltuples::bigint from pg_class where relname= table_name)
+  EXECUTE format('SELECT seq_scan, idx_scan FROM %s where relname = %s', contractor||'.pg_stat_user_tables', quote_literal(table_name))
+  INTO seq, idx;
+  place := seq + ceil(cast(idx as double precision)/ 10.0);
+  while place >= 10^cnt loop
+    cnt := cnt + 1;
+  end loop;
+  if cnt <= 5 then
+    return cnt * 1;
+  else
+    return cnt * 15;
+  end if;  
+end;
+$$;
