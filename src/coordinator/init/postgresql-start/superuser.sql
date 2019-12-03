@@ -67,7 +67,7 @@ begin
   raise notice 'Returning ~% bytes of data', payload_size;
   raise notice 'Result contribution by source: % ', src_contributions;
   --raise notice 'Total contributions: % ', total_contributions;
-  raise notice 'Current table reads by source: % ', src_reads;
+  raise notice 'Table access scores by source: % ', src_reads;
   raise notice 'Execution plan cost: % ', work_coordinator;
 
   -- Loop thru again and compute final publisher payouts
@@ -92,7 +92,8 @@ begin
   raise notice 'Cost of payload size: % ', cost_payload_size;
   raise notice 'Cost of accesses: % ', cost_accesses;
   raise notice 'Total query cost: % ', total_cost;
-  raise notice 'Total cost payouts: % ', payouts;
+  raise notice 'Publisher payouts: % ', payouts;
+  raise notice 'Coordinator payout: %', cost_work_coordinator + cost_payload_size;
 
   return;
 end;

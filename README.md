@@ -17,11 +17,12 @@ make psql-coordinator
 ```
 To execute a query that will compute query cost and payouts, use the following dummy example:
 ```sql
-select * from pay_per_query('select a.id, b.id, add_sources(a.source, b.source) as source
-from contractor_1.bleep a join contractor_2.bloop b on true')
-as t(id1 int, id2 int, source jsonb);
+select * from pay_per_query(
+    'select a.id, b.id, add_sources(a.source, b.source) as source
+    from contractor_1.bleep a join contractor_2.bloop b on true'
+) as t(id1 int, id2 int, source jsonb);
 ```
-...where `bleep` and `bloop` are valid table names. As done above, the `source` column must be selected and concatenated (using `add_sources`) or aggregated (using `agg_source`) as applicable in every query/subquery.
+...where `bleep` and `bloop` are valid table names. As done above, the `source` column must be selected--and potentially, concatenated using `add_sources`, or aggregated using `agg_source`--in every query/subquery.
 
 To spin down:
 ```bash
@@ -29,6 +30,8 @@ make stop
 ```
 
 # Development
+Cost parameters may be tuned in the `pay_per_query` function located in `./src/coordinator/superuser.sql`
+
 If you make changes to the Dockerfiles or initialization files, you'll need to rebuild before running again
 ```bash
 make build
