@@ -14,6 +14,7 @@ CREATE USER MAPPING FOR CURRENT_USER
     OPTIONS (user 'buddy', password 'pw');
 
 CREATE SCHEMA raw_contractor_:container_num;
+
 IMPORT FOREIGN SCHEMA public
   FROM SERVER contractor_server_:container_num
   INTO raw_contractor_:container_num;
@@ -23,19 +24,12 @@ IMPORT FOREIGN SCHEMA pg_catalog
   FROM SERVER contractor_server_:container_num
   INTO raw_contractor_:container_num;
 
--- Give access rights to user 'buddy'
-GRANT USAGE ON SCHEMA raw_contractor_:container_num TO buddy;
-GRANT SELECT ON ALL TABLES IN SCHEMA raw_contractor_:container_num TO buddy;
-GRANT USAGE ON FOREIGN SERVER contractor_server_:container_num TO buddy;
-CREATE USER MAPPING FOR buddy
-    SERVER contractor_server_:container_num
-    OPTIONS (user 'buddy', password 'pw');
-
+-- Give access rights to user 'buddy' to "contractor_X" schema
 CREATE SCHEMA contractor_:container_num;
 GRANT USAGE ON SCHEMA contractor_:container_num TO buddy;
 GRANT SELECT ON ALL TABLES IN SCHEMA contractor_:container_num TO buddy;
 
--- Create views with source column initialized
+-- Create views for every foreign table with source column initialized
 SET myvars.container_num TO :'container_num';
 DO $$
 DECLARE

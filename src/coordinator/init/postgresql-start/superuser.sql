@@ -5,6 +5,101 @@
 CREATE EXTENSION source_tracking_fdw;
 CREATE EXTENSION postgres_fdw;
 
+-- --------------------------------------------------------------------------------------
+-- Summary function that will call other functions for a given user query
+drop function if exists pay_per_query(text);
+create function pay_per_query(query text)
+returns setof record
+volatile
+language plpgsql
+as $$
+declare
+  r record;
+  r_cnt int := 0;
+  payload_size int := 0;
+  src_contributions jsonb := '{}';
+  total_contributions int := 0;
+  total_accesses int := 0;
+  access_cnt int;
+  src_reads jsonb := '{}';
+  src_payout int;
+  src_key text;
+  src_val int;
+  x numeric;
+  y numeric;
+
+  work_coordinator int := 500;
+  work_contractor int := 0;
+
+  cost_work_coordinator numeric;
+  cost_work_contractor numeric;
+  cost_payload_size numeric;
+  cost_contribution numeric;
+  cost_accesses numeric;
+  total_cost numeric := 0;
+  payouts jsonb := '{}';
+begin
+  -- Set cost tuning parameters
+  SET cost_params.work_coordinator TO 0.02;
+  SET cost_params.work_contractor TO 0.02;
+  SET cost_params.payload_size TO 0.005;
+  SET cost_params.contribution TO 25;
+  SET cost_params.accesses TO 1;
+
+  for r in EXECUTE query loop
+    r_cnt := r_cnt + 1;
+    payload_size := payload_size + (select octet_length(r::text));
+    src_contributions := agg_source_sfunc(src_contributions, r.source);
+    return next r;
+  end loop;
+
+  -- Loop thru and compute total contributions and accesses
+  for src_key, src_val in select * from jsonb_each(src_contributions) loop
+    access_cnt := (select accesses(src_key));
+    src_reads := src_reads || ('{"' || src_key || '":' || access_cnt || '}')::jsonb;
+    payouts := payouts || ('{"' || src_key || '":' || (current_setting('cost_params.accesses')::numeric * access_cnt) || '}')::jsonb;
+    total_contributions := total_contributions + src_val;
+    total_accesses := total_accesses + access_cnt;
+  end loop;
+
+  raise notice '########### Summary ############';
+  raise notice 'Returning % records', r_cnt;
+  raise notice 'Returning ~% bytes of data', payload_size;
+  raise notice 'Result contribution by source: % ', src_contributions;
+  --raise notice 'Total contributions: % ', total_contributions;
+  raise notice 'Current table reads by source: % ', src_reads;
+  raise notice 'Execution plan cost: % ', work_coordinator;
+
+  -- Loop thru again and compute final publisher payouts
+  for src_key, src_val in select * from jsonb_each(src_contributions) loop
+    x := (payouts->>src_key)::numeric; -- current payout for this source
+    y := (current_setting('cost_params.contribution')::numeric * src_val) / total_contributions;
+    payouts := payouts || ('{"' || src_key || '":' || round(x + y, 2) || '}')::jsonb;
+  end loop;
+
+  -- Compute weighted costs
+  cost_work_coordinator = current_setting('cost_params.work_coordinator')::numeric * work_coordinator;
+  cost_work_contractor = current_setting('cost_params.work_contractor')::numeric * work_contractor;
+  cost_payload_size = current_setting('cost_params.payload_size')::numeric * payload_size;
+  cost_contribution = current_setting('cost_params.contribution')::numeric;
+  cost_accesses = current_setting('cost_params.accesses')::numeric * total_accesses;
+  total_cost = cost_work_coordinator + cost_work_contractor + cost_payload_size + cost_contribution + cost_accesses;
+
+  raise notice '########### Weighted Costs ############';
+  raise notice 'Base cost: % ', cost_contribution;
+  raise notice 'Cost of coordinator work: % ', cost_work_coordinator;
+  --raise notice 'Cost of contractor work: % ', cost_work_contractor;
+  raise notice 'Cost of payload size: % ', cost_payload_size;
+  raise notice 'Cost of accesses: % ', cost_accesses;
+  raise notice 'Total query cost: % ', total_cost;
+  raise notice 'Total cost payouts: % ', payouts;
+
+  return;
+end;
+$$;
+-- --------------------------------------------------------------------------------------
+
+-- --------------------------------------------------------------------------------------
 -- Custom aggregator for json source column
 drop aggregate if exists agg_source(jsonb);
 drop function if exists agg_source_finalfunc(jsonb);
@@ -64,8 +159,12 @@ create aggregate agg_source (jsonb)
     initcond = '{}'
 );
 
-create function accesses(table_name text, contractor text)
-returns numeric
+-- --------------------------------------------------------------------------------------
+
+-- --------------------------------------------------------------------------------------
+-- Get accesses score for given foreign table
+create function accesses(fully_qualified_table_name text)
+returns int
 language plpgsql
 as $$
 declare
@@ -74,19 +173,22 @@ declare
   idx bigint;
   place int;
   cnt int := 0;
+  contractor text;
+  table_name text;
 begin
-  --with tot as
-  --(select reltuples::bigint from pg_class where relname= table_name)
-  EXECUTE format('SELECT seq_scan, idx_scan FROM %s where relname = %s', contractor||'.pg_stat_user_tables', quote_literal(table_name))
-  INTO seq, idx;
+  contractor := split_part(fully_qualified_table_name, '.', 1);
+  table_name := split_part(fully_qualified_table_name, '.', 2);
+  EXECUTE format('SELECT seq_scan, idx_scan FROM %s where relname = %s', contractor || '.pg_stat_user_tables', quote_literal(table_name))
+    INTO seq, idx;
   place := seq + ceil(cast(idx as double precision)/ 10.0);
-  while place >= 10^cnt loop
+  while place >= 3^cnt loop
     cnt := cnt + 1;
   end loop;
   if cnt <= 5 then
     return cnt * 1;
   else
-    return cnt * 15;
-  end if;  
+    return cnt * 3;
+  end if;
 end;
 $$;
+
