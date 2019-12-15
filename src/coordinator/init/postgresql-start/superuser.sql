@@ -28,7 +28,7 @@ declare
   x numeric;
   y numeric;
 
-  work_coordinator int := 500;
+  work_coordinator int := 0;
   work_contractor int := 0;
 
   cost_work_coordinator numeric;
@@ -61,6 +61,9 @@ begin
     total_contributions := total_contributions + src_val;
     total_accesses := total_accesses + access_cnt;
   end loop;
+
+  -- compute the execution cost
+  work_coordinator := plan_cost(query);
 
   raise notice '########### Summary ############';
   raise notice 'Returning % records', r_cnt;
@@ -193,3 +196,34 @@ begin
 end;
 $$;
 
+-- --------------------------------------------------------------------------------------
+
+-- --------------------------------------------------------------------------------------
+-- Get the estimated cost that the coordinator has to do
+create function plan_cost(query text)
+returns numeric --double precision
+language plpgsql
+as $$
+declare
+  lines record;
+  outp text;
+  cost text;
+  --int_cost text
+  num_cost int := 0;
+begin
+  for lines in select explain(query) loop
+    execute format('select substring(%s, ''\.\.(.+) r'')', quote_literal(lines)) into cost;
+    num_cost := num_cost + cast(cost as numeric) -100;
+  end loop;
+  return num_cost; --cast(num_cost as double precision);
+end;
+$$;  
+
+create function explain(query text)
+returns table(src text)
+language plpgsql
+as $$
+begin
+  return query execute format('explain %s', query);
+end;
+$$;  
