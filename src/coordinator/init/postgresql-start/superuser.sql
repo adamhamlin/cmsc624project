@@ -185,7 +185,7 @@ begin
   EXECUTE format('SELECT seq_scan, idx_scan FROM %s where relname = %s', contractor || '.pg_stat_user_tables', quote_literal(table_name))
     INTO seq, idx;
   place := seq + ceil(cast(idx as double precision)/ 10.0);
-  while place >= 3^cnt loop
+  while place >= 10^cnt loop
     cnt := cnt + 1;
   end loop;
   if cnt <= 5 then
@@ -199,7 +199,7 @@ $$;
 -- --------------------------------------------------------------------------------------
 
 -- --------------------------------------------------------------------------------------
--- Get the estimated cost that the coordinator has to do
+-- Get the estimated work that the coordinator will do
 create function plan_cost(query text)
 returns numeric --double precision
 language plpgsql
